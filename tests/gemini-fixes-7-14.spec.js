@@ -112,6 +112,9 @@ test('item 8: an anonId with HTML renders literally in results + summary; the ex
   expect(html).not.toContain('<b>x</b>');
   expect(html).toContain('&lt;b&gt;x&lt;/b&gt;');
 
+  // sandbox: the detailed «מומלץ» paragraph is choice 3 of mode ב
+  await page.locator('input[name="endingMode"][value="b"]').check({ force: true });
+  await page.selectOption('#endingChoice', '3');
   const summaryHtml = await page.locator('.summary-text').innerHTML();
   // her ruling 2026-10-09: the number is not written inside summary sentences
   expect(summaryHtml).not.toContain('<b>x</b>');

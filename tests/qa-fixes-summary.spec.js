@@ -258,7 +258,10 @@ async function parentSheet(page, scores, sex, years, months) {
     itemScores: scores,
     anonId: '9876',
   });
-  const [popup] = await Promise.all([page.waitForEvent('popup'), page.click('.btn-parent-pdf')]);
+  const [popup] = await Promise.all([
+    page.waitForEvent('popup'),
+    page.click('.btn-parent-pdf').then(() => page.click('.btn-parent-make')),
+  ]);
   await popup.waitForLoadState('domcontentloaded');
   await popup.waitForSelector('h1');
   return popup;

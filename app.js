@@ -777,6 +777,10 @@ function calculate() {
   document.getElementById('progressWrap').style.display = 'none';
   document.body.classList.add('showing-results');
 
+  // a fresh calculation: free text from before no longer matches the scores
+  endingState.edited = null;
+  endingState.base = '';
+  if (endingState.mode === 'c') endingState.mode = 'a';
   const resultsDiv = document.getElementById('results');
   resultsDiv.innerHTML = `
     <div class="results-header">
@@ -818,7 +822,8 @@ function calculate() {
       <p class="import-status" id="clicksStatus" role="status" aria-live="polite"></p>
       <button type="button" class="link-btn btn-clicks" onclick="downloadForClicks()">או: הורדה כקובץ טקסט (Notepad)</button>
       <p class="import-status" id="downloadStatus" role="status" aria-live="polite"></p>
-      <div class="summary-text">${buildSummary({
+      ${endingChooserHtml()}
+      <div class="summary-text" id="summaryText">${renderSummaryArea({
         anonId,
         gender,
         isMale,
@@ -851,7 +856,13 @@ function calculate() {
         <textarea id="parentNote" rows="2" dir="auto" placeholder="למשל: דבר אחד לנסות בבית"></textarea>
         <label class="parent-box-label" for="parentContact">פרטי קשר להורים (לא חובה) — למשל טלפון של המכון</label>
         <input type="text" id="parentContact" dir="auto" autocomplete="off" />
-        <button class="btn btn-parent-pdf" onclick="printParentResults()">PDF להורים</button>
+        <button class="btn btn-parent-pdf" onclick="openParentEditor()">PDF להורים</button>
+        <div class="parent-edit" id="parentEditor" hidden>
+          <label class="parent-box-label" for="parentEditText">הטקסט של הדף להורים. אפשר לערוך לפני ההפקה.</label>
+          <textarea id="parentEditText" class="parent-edit-text" dir="rtl" rows="20"></textarea>
+          <p class="parent-edit-hint">כותרת: שורה שמתחילה ב-# · כותרת משנה: ## · פריט ברשימה: שורה שמתחילה ב- · שורה ריקה פותחת פסקה חדשה.</p>
+          <button type="button" class="btn btn-parent-make" onclick="printParentResults()">הפקת PDF</button>
+        </div>
         <div class="parent-box-hint">מומלץ למסור להורים בפגישה או מיד אחריה.</div>
       </div>
 
@@ -1054,7 +1065,179 @@ function itemPhrases(isMale) {
 // canon B3: morning/evening twin pairs (items 1-16 only).
 const ITEM_TWIN = { 1: 9, 9: 1, 4: 12, 12: 4, 5: 13, 13: 5, 6: 14, 14: 6, 8: 16, 16: 8 };
 
-function buildSummary(d) {
+// ===== SANDBOX: how the clinical summary ENDS =====
+// This copy of the app lets the questionnaire's authors compare endings.
+// buildSummaryParts() gives { body, rec }: the clinical paragraphs, and the
+// app's own detailed «מומלץ» paragraph kept apart. composeSummary() puts
+// them together by the chosen mode and always closes with the standing
+// line. Every output (screen, OT PDF, Clicks copy, Notepad, AI export)
+// goes through composeSummary(), so the chosen ending travels everywhere.
+const STANDING_LINE = 'ההחלטה הסופית היא של המטפל/ת בלבד.';
+const EDITED_NOTE = 'הטקסט נערך ידנית.';
+const ENDING_SENTENCE_1 = 'מומלץ על טיפול בריפוי בעיסוק לשיפור ניהול התפקוד והתפקודים הניהוליים.';
+const ENDING_SENTENCE_2 =
+  'מומלץ להתבונן בפריטי השאלון, לבחון באילו שגרות הקשיים באים לידי ביטוי, ולשוחח עם ההורים על מקור הפער.';
+const ENDING_OPTIONS = [
+  { id: '1', label: ENDING_SENTENCE_1, text: ENDING_SENTENCE_1 },
+  { id: '2', label: ENDING_SENTENCE_2, text: ENDING_SENTENCE_2 },
+  { id: '3', label: 'המלצה מפורטת (הדרכת הורים)', text: null },
+  { id: '4', label: 'ללא משפט סיום', text: '' },
+];
+const ENDING_HINT =
+  'ההצעה הראשונה והשנייה: ניסוח כללי לפי כרמית פריש (13.10). השלישית: הניסוח הנוכחי באתר הראשי.';
+const ENDING_MODES = [
+  { id: 'a', label: 'א. תוצאות בלבד' },
+  { id: 'b', label: 'ב. בחירה מרשימה' },
+  { id: 'c', label: 'ג. עריכה חופשית' },
+];
+
+// mode: a | b | c. choice: '' or an ENDING_OPTIONS id. edited: the free text
+// (mode c) or null; base: the text it started from, to know it was changed.
+const endingState = { mode: 'a', choice: '', edited: null, base: '' };
+let lastSummaryInput = null;
+
+function summaryParaHtml(t) {
+  return `<p style="font-size:0.85rem; margin-bottom:12px;">${t}</p>`;
+}
+
+function standingHtml() {
+  return `<p class="summary-standing" style="font-size:0.85rem; font-weight:600; margin-bottom:12px;">${STANDING_LINE}</p>`;
+}
+
+// Summary HTML to plain text the way the Clicks copy wants it: a heading
+// line is followed directly by its paragraph.
+function summaryPlain(html) {
+  const tight = html.replace(/(<p style="font-weight:700;[^>]*>[^<]*)<\/p>/g, '$1<br>');
+  return summaryHtmlToText(tight)
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&amp;/g, '&');
+}
+
+// The summary as the chosen ending shapes it, without the standing line.
+function endingCoreHtml(parts) {
+  if (endingState.mode === 'a') return parts.body;
+  const opt = ENDING_OPTIONS.find((o) => o.id === endingState.choice);
+  if (!opt || opt.id === '4') return parts.body;
+  if (opt.id === '3') return parts.body + parts.rec;
+  return parts.body + summaryParaHtml(escapeHtml(opt.text));
+}
+
+// Free text back to summary HTML: a blank line starts a new paragraph; a
+// short first line without a final period, followed by more lines, stays a
+// heading.
+function textToSummaryHtml(text) {
+  return text
+    .split(/\n{2,}/)
+    .map((b) => b.trim())
+    .filter(Boolean)
+    .map((block) => {
+      const lines = block.split('\n');
+      const first = lines[0].trim();
+      if (lines.length > 1 && first.length <= 30 && !/[.:]$/.test(first)) {
+        return (
+          `<p style="font-weight:700; color:var(--primary); font-size:0.88rem; margin-bottom:6px;">${escapeHtml(first)}</p>` +
+          summaryParaHtml(escapeHtml(lines.slice(1).join('\n').trim()).replace(/\n/g, '<br>'))
+        );
+      }
+      return summaryParaHtml(escapeHtml(block).replace(/\n/g, '<br>'));
+    })
+    .join('');
+}
+
+function endingTextChanged() {
+  return (
+    endingState.mode === 'c' &&
+    endingState.edited !== null &&
+    endingState.edited !== endingState.base
+  );
+}
+
+function composeSummary(d) {
+  const parts = buildSummaryParts(d);
+  let html;
+  if (endingState.mode === 'c' && endingState.edited !== null) {
+    html =
+      textToSummaryHtml(endingState.edited) +
+      (endingTextChanged() ? summaryParaHtml(EDITED_NOTE) : '');
+  } else {
+    html = endingCoreHtml(parts);
+  }
+  return html + standingHtml();
+}
+
+function endingChooserHtml() {
+  const radios = ENDING_MODES.map(
+    (m) =>
+      `<label class="ending-seg"><input type="radio" name="endingMode" value="${m.id}"${endingState.mode === m.id ? ' checked' : ''} onchange="setEndingMode(this.value)"><span>${m.label}</span></label>`,
+  ).join('');
+  const opts =
+    '<option value="">בחר/י משפט סיום</option>' +
+    ENDING_OPTIONS.map(
+      (o) =>
+        `<option value="${o.id}"${endingState.choice === o.id ? ' selected' : ''}>${escapeHtml(o.label)}</option>`,
+    ).join('');
+  return `<div class="ending-chooser" id="endingChooser">
+        <div class="ending-title" id="endingTitle">איך הסיכום מסתיים</div>
+        <div class="ending-seg-row" role="radiogroup" aria-labelledby="endingTitle">${radios}</div>
+        <div class="ending-pick" id="endingPick"${endingState.mode === 'b' ? '' : ' hidden'}>
+          <label class="ending-pick-label" for="endingChoice">משפט סיום</label>
+          <select id="endingChoice" onchange="setEndingChoice(this.value)">${opts}</select>
+          <p class="ending-hint">${ENDING_HINT}</p>
+        </div>
+      </div>`;
+}
+
+// The summary area: the composed text, or (mode c) an editable box.
+function renderSummaryArea(d) {
+  lastSummaryInput = d;
+  if (endingState.mode === 'c' && endingState.edited !== null) {
+    return `<textarea id="summaryEdit" class="summary-edit" dir="rtl" rows="18" aria-label="עריכת הסיכום" oninput="onSummaryEdit(this.value)">${escapeHtml(endingState.edited)}</textarea>
+      <p class="ending-edited-note" id="endingEditedNote"${endingTextChanged() ? '' : ' hidden'}>${EDITED_NOTE}</p>${standingHtml()}`;
+  }
+  return composeSummary(d);
+}
+
+function refreshSummaryArea() {
+  const box = document.getElementById('summaryText');
+  if (box && lastSummaryInput) box.innerHTML = renderSummaryArea(lastSummaryInput);
+  const pick = document.getElementById('endingPick');
+  if (pick) pick.hidden = endingState.mode !== 'b';
+}
+
+function setEndingMode(mode) {
+  if (!lastSummaryInput) return;
+  if (mode === 'c' && endingState.edited === null) {
+    // start the free text from what the previous mode was showing
+    const text = summaryPlain(endingCoreHtml(buildSummaryParts(lastSummaryInput)));
+    endingState.edited = text;
+    endingState.base = text;
+  }
+  endingState.mode = mode;
+  refreshSummaryArea();
+}
+
+function setEndingChoice(choice) {
+  endingState.choice = choice;
+  refreshSummaryArea();
+}
+
+function onSummaryEdit(value) {
+  endingState.edited = value;
+  const note = document.getElementById('endingEditedNote');
+  if (note) note.hidden = !endingTextChanged();
+}
+
+function resetEndingState() {
+  endingState.mode = 'a';
+  endingState.choice = '';
+  endingState.edited = null;
+  endingState.base = '';
+}
+
+function buildSummaryParts(d) {
   const belowCutoff = (s, c) => s < c;
   const m = d.isMale;
   const g = (male, female) => (m ? male : female);
@@ -1139,6 +1322,7 @@ function buildSummary(d) {
   const para = (t) => `<p style="font-size:0.85rem; margin-bottom:12px;">${t}</p>`;
 
   let s = '';
+  let recHtml = '';
 
   // ===== תמונה כללית =====
   s += header('תמונה כללית');
@@ -1598,10 +1782,15 @@ function buildSummary(d) {
     } else {
       rec += '.';
     }
-    s += para(rec);
+    recHtml = para(rec);
   }
 
-  return s;
+  return { body: s, rec: recHtml };
+}
+
+function buildSummary(d) {
+  const parts = buildSummaryParts(d);
+  return parts.body + parts.rec;
 }
 
 // AI-13: the new prompt. Top-level so buildExportText() can call it. The
@@ -1743,7 +1932,7 @@ function buildExportText() {
   });
 
   // AI-12: the fixed summary, so the AI sees exactly what it must not rewrite.
-  const summaryHtml = buildSummary({
+  const summaryHtml = composeSummary({
     anonId: anonIdText,
     gender,
     isMale,
@@ -1785,7 +1974,7 @@ function buildClicksText() {
   const morningAvg = routineAvg('morning');
   const playAvg = routineAvg('play');
   const socialAvg = routineAvg('social');
-  const summaryHtml = buildSummary({
+  const summaryHtml = composeSummary({
     anonId: escapeHtml(getAnonId()) || '—',
     gender: genderText(genderRaw),
     isMale: genderRaw === 'male',
@@ -1802,15 +1991,8 @@ function buildClicksText() {
     c: cutoffs[ageGroup],
     scores,
   });
-  // UX2-6: a heading line is followed DIRECTLY by its first paragraph; one
-  // blank line between paragraphs and before the next heading.
-  const tight = summaryHtml.replace(/(<p style="font-weight:700;[^>]*>[^<]*)<\/p>/g, '$1<br>');
-  return summaryHtmlToText(tight)
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&amp;/g, '&');
+  // UX2-6 (heading directly followed by its paragraph) lives in summaryPlain().
+  return summaryPlain(summaryHtml);
 }
 
 const S_CLICKS_COPIED = 'הועתק ✓ — אפשר להדביק בקליקס';
@@ -2075,8 +2257,6 @@ function buildParentSheetHtml(p) {
   @page { size: A4; margin: 10mm; }
   body { font-family: 'Heebo', sans-serif; direction: rtl; color: #1a202c; line-height: 1.45; padding: 18px; max-width: 760px; margin: 0 auto; font-size: 13px; }
   .head { text-align: center; margin-bottom: 8px; }
-  .logos { display: flex; align-items: flex-end; justify-content: center; gap: 14px; margin-bottom: 6px; }
-  .logos img { height: 28px; width: auto; max-width: 100px; object-fit: contain; }
   .q-title { font-size: 12px; font-weight: 700; margin-top: 4px; line-height: 1.4; }
   .q-authors { font-size: 11px; color: #475569; margin-top: 2px; }
   h1 { text-align: center; font-size: 20px; margin: 10px 0 2px; }
@@ -2103,11 +2283,6 @@ function buildParentSheetHtml(p) {
 </head>
 <body>
   <div class="head">
-    <div class="logos">
-      <img src="assets/haifa.jpg" alt="אוניברסיטת חיפה">
-      <img src="assets/chap.png" alt="המעבדה לתפקוד אנושי מורכב (CHAP)">
-      <img src="assets/clalit.svg" alt="שירותי בריאות כללית">
-    </div>
     <div class="q-title">שאלון למדידת יכולת הניהול העצמי של ילדים בשגרות היום יום (EFORTS)</div>
     <div class="q-authors">כרמית פריש ופרופ' שרה רוזנבלום, אוניברסיטת חיפה</div>
   </div>
@@ -2136,28 +2311,144 @@ function buildParentSheetHtml(p) {
 </html>`;
 }
 
+// Sandbox: the parent sheet opens in an editable preview first. The
+// generated sheet is turned into plain text (a "# " line is a title, a "## "
+// line a section title, a "- " line a list item, a blank line starts a new
+// paragraph), the therapist edits it, and the PDF is made from the edited
+// text. The page's own look (style, header, footer) is kept.
+function parentSheetHtmlFromForm() {
+  const scores = {};
+  items.forEach((item) => {
+    const checked = document.querySelector(`input[name="q${item.num}"]:checked`);
+    if (checked) scores[item.num] = parseInt(checked.value);
+  });
+  const fillIso = getFillDateValue();
+  const fd = new Date(fillIso || Date.now());
+  const two = (n) => String(n).padStart(2, '0');
+  return buildParentSheetHtml({
+    sexRaw: document.getElementById('childGender').value,
+    ageText: document.getElementById('calcAge').textContent,
+    fillDateText: `${two(fd.getDate())}/${two(fd.getMonth() + 1)}/${fd.getFullYear()}`,
+    scores,
+    c: cutoffs[document.getElementById('ageGroup').value],
+    note: document.getElementById('parentNote').value,
+    contact: document.getElementById('parentContact').value, // printed only, never stored
+  });
+}
+
+function parentHtmlToText(html) {
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const clean = (el) => el.textContent.replace(/\s+/g, ' ').trim();
+  const blocks = [];
+  const walk = (el) => {
+    const tag = el.tagName;
+    if (el.classList.contains('head') || el.classList.contains('footer')) return;
+    if (tag === 'SECTION') {
+      Array.from(el.children).forEach(walk);
+    } else if (tag === 'H1') {
+      blocks.push('# ' + clean(el));
+    } else if (tag === 'H2') {
+      blocks.push('## ' + clean(el));
+    } else if (tag === 'UL') {
+      blocks.push(
+        Array.from(el.children)
+          .map((li) => '- ' + clean(li))
+          .join('\n'),
+      );
+    } else if (el.classList.contains('skill')) {
+      const name = clean(el.querySelector('b'));
+      const chip = el.querySelector('.chip');
+      const desc = el.querySelector('.skill-desc');
+      blocks.push(`${name}${chip ? ' — ' + clean(chip) : ''}\n${desc ? clean(desc) : ''}`.trim());
+    } else if (clean(el)) {
+      blocks.push(
+        el.innerHTML.includes('<br>')
+          ? el.innerHTML.replace(/<br\s*\/?>/g, '\n').replace(/<[^>]+>/g, '')
+          : clean(el),
+      );
+    }
+  };
+  Array.from(doc.body.children).forEach(walk);
+  return blocks.join('\n\n');
+}
+
+function parentTextToHtml(baseHtml, text) {
+  const e = escapeHtml;
+  const body = text
+    .split(/\n{2,}/)
+    .map((b) => b.trim())
+    .filter(Boolean)
+    .map((block) => {
+      const out = [];
+      let list = [];
+      let para = [];
+      const flushList = () => {
+        if (list.length) out.push(`<ul>${list.join('')}</ul>`);
+        list = [];
+      };
+      const flushPara = () => {
+        if (para.length) out.push(`<p>${para.map(e).join('<br>')}</p>`);
+        para = [];
+      };
+      block.split('\n').forEach((raw) => {
+        const line = raw.trim();
+        if (!line) return;
+        if (line.startsWith('## ')) {
+          flushList();
+          flushPara();
+          out.push(`<section><h2>${e(line.slice(3))}</h2></section>`);
+        } else if (line.startsWith('# ')) {
+          flushList();
+          flushPara();
+          out.push(`<h1>${e(line.slice(2))}</h1>`);
+        } else if (line.startsWith('- ')) {
+          flushPara();
+          list.push(`<li>${e(line.slice(2))}</li>`);
+        } else {
+          flushList();
+          para.push(line);
+        }
+      });
+      flushList();
+      flushPara();
+      return out.join('');
+    })
+    .join('\n');
+  const doc = new DOMParser().parseFromString(baseHtml, 'text/html');
+  Array.from(doc.body.children).forEach((el) => {
+    if (!el.classList.contains('head') && !el.classList.contains('footer')) el.remove();
+  });
+  const footer = doc.body.querySelector('.footer');
+  const holder = doc.createElement('div');
+  holder.innerHTML = body;
+  Array.from(holder.childNodes).forEach((n) => doc.body.insertBefore(n, footer));
+  return '<!DOCTYPE html>\n' + doc.documentElement.outerHTML;
+}
+
+let parentEditBase = '';
+
+function openParentEditor() {
+  try {
+    const html = parentSheetHtmlFromForm();
+    const box = document.getElementById('parentEditor');
+    parentEditBase = parentHtmlToText(html);
+    document.getElementById('parentEditText').value = parentEditBase;
+    box.hidden = false;
+    document.getElementById('parentEditText').focus();
+  } catch (err) {
+    alert('שגיאה בפתיחת העריכה: ' + err.message);
+  }
+}
+
 function printParentResults() {
-  const btn = document.querySelector('.btn-parent-pdf');
+  const btn = document.querySelector('.btn-parent-make');
   btn.disabled = true;
   btn.textContent = 'מכין להדפסה…';
   try {
-    const scores = {};
-    items.forEach((item) => {
-      const checked = document.querySelector(`input[name="q${item.num}"]:checked`);
-      if (checked) scores[item.num] = parseInt(checked.value);
-    });
-    const fillIso = getFillDateValue();
-    const fd = new Date(fillIso || Date.now());
-    const two = (n) => String(n).padStart(2, '0');
-    const html = buildParentSheetHtml({
-      sexRaw: document.getElementById('childGender').value,
-      ageText: document.getElementById('calcAge').textContent,
-      fillDateText: `${two(fd.getDate())}/${two(fd.getMonth() + 1)}/${fd.getFullYear()}`,
-      scores,
-      c: cutoffs[document.getElementById('ageGroup').value],
-      note: document.getElementById('parentNote').value,
-      contact: document.getElementById('parentContact').value, // printed only, never stored
-    });
+    // untouched text prints the generated sheet as it is
+    const baseHtml = parentSheetHtmlFromForm();
+    const edited = document.getElementById('parentEditText').value;
+    const html = edited === parentEditBase ? baseHtml : parentTextToHtml(baseHtml, edited);
     const printWindow = window.open('', '_blank', 'width=800,height=900');
     if (!printWindow) {
       alert('הדפדפן חסם את חלון ההדפסה. יש לאפשר חלונות קופצים לאתר זה ולנסות שוב.');
@@ -2174,7 +2465,7 @@ function printParentResults() {
     alert('שגיאה ביצירת PDF: ' + err.message);
   }
   btn.disabled = false;
-  btn.textContent = 'PDF להורים';
+  btn.textContent = 'הפקת PDF';
 }
 
 async function printResults() {
@@ -2210,7 +2501,7 @@ async function printResults() {
     const flexAvg = avg(items.filter((i) => i.ef === 'flex').map((i) => scores[i.num]));
 
     const isMale = document.getElementById('childGender').value === 'male';
-    const summaryHtml = buildSummary({
+    const summaryHtml = composeSummary({
       anonId,
       gender,
       isMale,
@@ -2318,8 +2609,7 @@ async function printResults() {
   h1 { text-align: center; font-size: 18px; margin-bottom: 4px; }
   .meta { text-align: center; font-size: 12px; color: #666; margin-bottom: 16px; }
   .print-header { text-align: center; margin-bottom: 12px; }
-  .print-header-logos { display: flex; align-items: flex-end; justify-content: center; gap: 14px; margin-bottom: 8px; }
-  .print-header-logos img { height: 28px; width: auto; max-width: 100px; object-fit: contain; }
+  .print-header-sandbox { text-align: center; font-size: 11px; font-weight: 700; color: #92400e; margin-bottom: 6px; }
   .print-header-title { font-size: 15px; font-weight: 700; color: #1a202c; margin-top: 8px; line-height: 1.4; }
   .print-header-authors { font-size: 12px; font-weight: 700; color: #1a202c; margin-top: 6px; }
   .print-header-lab { font-size: 10px; font-weight: 500; color: #64748b; margin-top: 1px; }
@@ -2347,11 +2637,7 @@ async function printResults() {
 <body>
   <div class="page-footer">EFORTS · מטופל מס' ${anonId} · תאריך מילוי ${fillDateText}</div>
   <div class="print-header">
-    <div class="print-header-logos">
-      <img src="assets/haifa.jpg" alt="אוניברסיטת חיפה">
-      <img src="assets/chap.png" alt="המעבדה לתפקוד אנושי מורכב (CHAP)">
-      <img src="assets/clalit.svg" alt="שירותי בריאות כללית">
-    </div>
+    <div class="print-header-sandbox">EFORTS — אתר ניסוי (לא לשימוש קליני)</div>
     <div class="print-header-title">שאלון למדידת יכולת הניהול העצמי של ילדים בשגרות היום יום</div>
     <div class="print-header-authors">כרמית פריש ופרופ' שרה רוזנבלום, אוניברסיטת חיפה</div>
     <div class="print-header-lab">המעבדה לתפקוד אנושי מורכב (CHAP), אוניברסיטת חיפה</div>
@@ -2553,6 +2839,7 @@ function goBack() {
 }
 
 function resetForm() {
+  resetEndingState();
   if (!confirm('לאפס את כל התשובות ולהתחיל שאלון חדש? הנתונים השמורים בלשונית זו יימחקו.')) return;
   storeRemove('eforts_save');
   parentNoteDraft = '';

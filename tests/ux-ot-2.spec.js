@@ -107,7 +107,10 @@ test('R5: parent sheet — chip beside skill name, contact line, blank name fiel
   await open(page);
   await results(page);
   await page.locator('#parentContact').fill('טלפון המכון 02-0000000');
-  const [popup] = await Promise.all([page.waitForEvent('popup'), page.click('.btn-parent-pdf')]);
+  const [popup] = await Promise.all([
+    page.waitForEvent('popup'),
+    page.click('.btn-parent-pdf').then(() => page.click('.btn-parent-make')),
+  ]);
   await popup.waitForLoadState('domcontentloaded');
   const body = await popup.locator('body').innerText();
   expect(body).toContain('לשאלות: טלפון המכון 02-0000000');
@@ -124,7 +127,10 @@ test('R5: parent sheet — chip beside skill name, contact line, blank name fiel
 test('R5b: without contact text the default line stays', async ({ page }) => {
   await open(page);
   await results(page);
-  const [popup] = await Promise.all([page.waitForEvent('popup'), page.click('.btn-parent-pdf')]);
+  const [popup] = await Promise.all([
+    page.waitForEvent('popup'),
+    page.click('.btn-parent-pdf').then(() => page.click('.btn-parent-make')),
+  ]);
   await popup.waitForLoadState('domcontentloaded');
   const body = await popup.locator('body').innerText();
   expect(body).toContain('אפשר לפנות לצוות הריפוי בעיסוק.');

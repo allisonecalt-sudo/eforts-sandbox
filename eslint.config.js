@@ -31,6 +31,7 @@ module.exports = [
         MouseEvent: 'readonly',
         TouchEvent: 'readonly',
         Blob: 'readonly',
+        DOMParser: 'readonly',
         Response: 'readonly',
         DecompressionStream: 'readonly',
         Uint8Array: 'readonly',
@@ -46,7 +47,7 @@ module.exports = [
         {
           argsIgnorePattern: '^_',
           varsIgnorePattern:
-            '^(calculate|toggleDrill|drillKey|goBack|resetForm|printResults|printParentResults|downloadForAI|downloadForClicks|copyClicksText)$',
+            '^(calculate|toggleDrill|drillKey|goBack|resetForm|printResults|printParentResults|downloadForAI|downloadForClicks|copyClicksText|setEndingMode|setEndingChoice|onSummaryEdit|openParentEditor|buildSummary)$',
         },
       ],
       'no-undef': 'error',
@@ -107,6 +108,9 @@ module.exports = [
         cutoffStatus: 'readonly',
         buildSummary: 'readonly',
         buildClicksText: 'readonly',
+        summaryPlain: 'readonly',
+        buildSummaryParts: 'readonly',
+        lastSummaryInput: 'readonly',
         calculate: 'readonly',
         updateAge: 'readonly',
         getBirthDateValue: 'readonly',

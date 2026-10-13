@@ -156,7 +156,10 @@ test('10: uploading the app’s own parent sheet says it is the parents’ summa
     itemScores: scores,
     anonId: '7',
   });
-  const [popup] = await Promise.all([page.waitForEvent('popup'), page.click('.btn-parent-pdf')]);
+  const [popup] = await Promise.all([
+    page.waitForEvent('popup'),
+    page.click('.btn-parent-pdf').then(() => page.click('.btn-parent-make')),
+  ]);
   await popup.waitForSelector('h1');
   const pdf = await popup.pdf({ preferCSSPageSize: true });
   await popup.close();

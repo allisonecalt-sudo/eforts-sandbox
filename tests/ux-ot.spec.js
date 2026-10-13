@@ -58,7 +58,7 @@ test('O1: the preview has the number field and one button that fills and calcula
   expect(await page.locator('#anonId').inputValue()).toBe('42');
   // lands on the results title, not the page top
   await expect(page.locator('#resultsTitle')).toBeInViewport();
-  expect(await page.evaluate(() => window.scrollY)).toBeLessThan(60);
+  expect(await page.evaluate(() => window.scrollY)).toBeLessThan(120);
 });
 
 test('O1: an empty number is marked and focused, and nothing is filled', async ({ page }) => {
@@ -433,7 +433,14 @@ test('O11: sex reads «בן» / «בת» on the form and in the results header',
 
 // ===== O12 =====
 async function printTitle(page, buttonSel) {
-  const [popup] = await Promise.all([page.waitForEvent('popup'), page.click(buttonSel)]);
+  const [popup] = await Promise.all([
+    page.waitForEvent('popup'),
+    (async () => {
+      await page.click(buttonSel);
+      // sandbox: the parent sheet opens in an editor first
+      if (buttonSel === '.btn-parent-pdf') await page.click('.btn-parent-make');
+    })(),
+  ]);
   await popup.waitForLoadState('domcontentloaded');
   return { popup, title: await popup.title() };
 }

@@ -45,7 +45,10 @@ async function openParentSheet(page, fx, note) {
     anonId: '9876',
   });
   if (note !== undefined) await page.fill('#parentNote', note);
-  const [popup] = await Promise.all([page.waitForEvent('popup'), page.click('.btn-parent-pdf')]);
+  const [popup] = await Promise.all([
+    page.waitForEvent('popup'),
+    page.click('.btn-parent-pdf').then(() => page.click('.btn-parent-make')),
+  ]);
   await popup.waitForLoadState('domcontentloaded');
   await popup.waitForSelector('h1');
   return { popup, html: await popup.content() };

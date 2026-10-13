@@ -1583,3 +1583,128 @@ body.previewing .info-calc {
     content: 'בנורמה';
   }
 }
+
+/* ===== Sandbox: banner, header line, ending chooser ===== */
+.sandbox-banner {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 1000;
+  background: #fef3c7;
+  color: #78350f;
+  border-bottom: 2px solid #f59e0b;
+  text-align: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 8px 12px;
+}
+body.ot {
+  padding-top: 44px;
+}
+.header-sandbox {
+  display: inline-block;
+  background: #fef3c7;
+  color: #78350f;
+  border: 1.5px solid #f59e0b;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  padding: 4px 16px;
+  margin-bottom: 12px;
+}
+.ending-chooser {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #fafcff;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+}
+.ending-title {
+  font-weight: 700;
+  font-size: 0.9rem;
+  margin-bottom: 8px;
+}
+.ending-seg-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.ending-seg {
+  cursor: pointer;
+}
+.ending-seg input {
+  position: absolute;
+  opacity: 0;
+}
+.ending-seg span {
+  display: inline-block;
+  padding: 8px 16px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  background: #fff;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+.ending-seg input:checked + span {
+  background: var(--blue);
+  border-color: var(--blue);
+  color: #fff;
+}
+.ending-seg input:focus-visible + span {
+  outline: 3px solid #f59e0b;
+  outline-offset: 2px;
+}
+.ending-pick {
+  margin-top: 12px;
+}
+.ending-pick[hidden],
+.parent-edit[hidden],
+.ending-edited-note[hidden] {
+  display: none;
+}
+.ending-pick-label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.ending-pick select {
+  width: 100%;
+  font: inherit;
+  font-size: 0.9rem;
+  padding: 8px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  background: #fff;
+}
+.ending-hint {
+  color: #6b7280;
+  font-size: 0.78rem;
+  margin-top: 6px;
+}
+.summary-edit,
+.parent-edit-text {
+  width: 100%;
+  font-family: inherit;
+  font-size: 0.95rem;
+  line-height: 1.7;
+  padding: 10px;
+  border: 1.5px solid var(--blue);
+  border-radius: 8px;
+  direction: rtl;
+  resize: vertical;
+}
+.ending-edited-note {
+  font-size: 0.78rem;
+  color: #6b7280;
+  margin: 4px 0 10px;
+}
+.parent-edit {
+  margin-top: 12px;
+}
+.parent-edit-hint {
+  font-size: 0.78rem;
+  color: #6b7280;
+  margin: 4px 0 8px;
+}

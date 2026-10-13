@@ -112,8 +112,13 @@ async function runRoundTrip(
     fixture.expected.flexibility.toFixed(2),
   ]);
 
+  // sandbox: the golden summary is the full text with the detailed ending
+  // (choice 3); the standing line closes it
+  await page.locator('input[name="endingMode"][value="b"]').check({ force: true });
+  await page.selectOption('#endingChoice', '3');
   const summaryHtml = await page.locator('.summary-text').innerHTML();
-  expect(summaryHtml).toBe(loadGoldenSummary(summaryFile));
+  const standing = await page.evaluate(() => window.standingHtml());
+  expect(summaryHtml).toBe(loadGoldenSummary(summaryFile) + standing);
 
   return { code };
 }
