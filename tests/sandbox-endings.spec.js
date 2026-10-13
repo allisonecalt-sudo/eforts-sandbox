@@ -164,3 +164,27 @@ test('sandbox pages: title, banner, no logos, noindex', async ({ page }) => {
   await expect(page.locator('img')).toHaveCount(0);
   await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', 'noindex, nofollow');
 });
+
+test('mode א: the AI export asks for no recommendation paragraph or treatment goals', async ({
+  page,
+}) => {
+  await fillAndCalc(page, MODELS.G50);
+  const ai = await page.evaluate(() => buildExportText());
+  expect(ai).not.toContain('מומלץ');
+  expect(ai).not.toContain('מטרות טיפול');
+  expect(ai).toContain(STANDING);
+});
+
+test('modes ב and ג: the AI instructions name the closing text and ask for no other', async ({
+  page,
+}) => {
+  await fillAndCalc(page, MODELS.G50);
+  await setMode(page, 'b');
+  await page.selectOption('#endingChoice', '1');
+  const ai = await page.evaluate(() => buildExportText());
+  expect(ai).toContain('אל תכתוב משפט סיום או המלצה נוספים');
+  expect(ai).not.toContain('פסקת "מומלץ"');
+  await setMode(page, 'c');
+  const ai2 = await page.evaluate(() => buildExportText());
+  expect(ai2).toContain('אל תכתוב משפט סיום או המלצה נוספים');
+});
