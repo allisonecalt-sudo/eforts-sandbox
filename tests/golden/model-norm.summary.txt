@@ -1,0 +1,1 @@
+<p style="font-weight:700; color:var(--primary); font-size:0.88rem; margin-bottom:6px;">תמונה כללית</p><p style="font-size:0.85rem; margin-bottom:12px;">על פי דיווח ההורים בשאלון ה-EFORTS, הניהול העצמאי של שגרות היום-יום הינו בטווח הנורמה ביחס לבני גילו (קיבל ציון כולל 4.00 כאשר ציון החתך הוא 2.92).</p>

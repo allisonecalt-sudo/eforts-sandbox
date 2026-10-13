@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="referrer" content="no-referrer" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="connect-src 'none'; form-action 'none'; base-uri 'none'; object-src 'none'"
+    />
+    <title>EFORTS — שאלון להורים</title>
+    <meta property="og:title" content="EFORTS — שאלון להורים" />
+    <meta
+      property="og:description"
+      content="שאלון למדידת יכולת הניהול העצמי של ילדים בשגרות היום יום. ממלאים בטלפון, ובסוף שולחים את הקובץ למטפל/ת."
+    />
+    <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="parent.css" />
+  </head>
+  <body>
+    <div class="container">
+      <!-- Header -->
+      <div class="header">
+        <div class="header-logos">
+          <img src="assets/haifa.jpg" alt="אוניברסיטת חיפה" class="header-logo header-logo-haifa" />
+          <img
+            src="assets/chap.png"
+            alt="המעבדה לתפקוד אנושי מורכב (CHAP)"
+            class="header-logo header-logo-chap"
+          />
+          <img
+            src="assets/clalit.svg"
+            alt="שירותי בריאות כללית"
+            class="header-logo header-logo-clalit"
+          />
+        </div>
+        <h1>
+          שאלון למדידת יכולת הניהול העצמי של ילדים בשגרות היום יום
+          <span class="header-acronym">EFORTS</span>
+        </h1>
+        <p class="header-authors">כרמית פריש ופרופ' שרה רוזנבלום, אוניברסיטת חיפה</p>
+        <p class="header-lab">המעבדה לתפקוד אנושי מורכב (CHAP), אוניברסיטת חיפה</p>
+        <p class="header-citation">Frisch & Rosenblum, 2014</p>
+        <p class="header-subtitle">שאלון להורים</p>
+        <p class="header-credit">
+          תהליך מחשוב השאלון בוצע ע"י אליסון אלט, מרפאה בעיסוק בשירותי בריאות כללית מחוז ירושלים,
+          בתיאום ואישור המחברות.
+        </p>
+      </div>
+
+      <div id="pDraftBar" class="p-draft-bar" hidden>
+        <span id="pDraftBarText">המשכנו מאיפה שעצרתם. התשובות שסימנתם שמורות רק במכשיר הזה.</span>
+        <button type="button" id="pDraftClear" class="p-textlink p-textlink-inline">איפוס</button>
+      </div>
+
+      <div id="pFormSection">
+        <div class="progress-wrap">
+          <div class="progress-bar"><div class="progress-fill" id="pProgressFill"></div></div>
+          <div class="progress-text"><bdi dir="ltr" id="pProgressText">0 / 30</bdi></div>
+          <button type="button" id="pBarGap" class="p-bar-gap" hidden></button>
+          <div id="pBarNote" class="p-bar-note" role="status" hidden>המשכנו מאיפה שעצרתם</div>
+        </div>
+
+        <section id="pIntro" class="info-card">
+          <div class="info-card-title" id="pIntroTitle">לפני שמתחילים</div>
+          <div class="p-instr">
+            <div class="p-instr-label" id="pInstrLabel">הוראות (מתוך השאלון)</div>
+            <p id="pInstr">
+              במסגרת השגרות השונות בחיי היום יום אנו וילדינו מבצעים פעילויות רבות. מטרת השאלון היא
+              לקבל תמונה על אופן הניהול העצמי של ילדך בשגרות היום יום. המשפטים הבאים מתייחסים לאופן
+              הביצוע של ילדך בפעילויות הקשורות בשגרות יום יומיות שכיחות כמו שגרות הבוקר והערב, שגרת
+              משחק ופנאי ושגרה של תפקוד חברתי. נא סמן/י √ מתחת לתשובה שמבטאת באופן הטוב ביותר את
+              תפקוד ילדך בשלושת החודשים האחרונים בכל פעילות. בבקשה סמן/י תשובה בכל המשפטים.
+              <em>השאלות מנוסחות בלשון זכר, אך מכוונות לבנים ולבנות כאחד.</em>
+            </p>
+          </div>
+          <p id="pHow">בכל שאלה לחצו על התשובה המתאימה ביותר. אפשר לשנות תשובה בכל שלב.</p>
+          <p id="pPrivacy" class="p-privacy">
+            🔒 התשובות נשמרות רק במכשיר שלכם — אפשר לעצור ולהמשיך אחר כך. בסוף אתם שולחים את הקובץ.
+          </p>
+        </section>
+
+        <section id="pDetails" class="info-card">
+          <div class="info-card-title" id="pDetailsTitle">פרטי הילד/ה</div>
+          <div class="p-details-grid">
+            <fieldset id="pSexField" class="info-field">
+              <legend id="pSexLegend">מין</legend>
+              <div class="p-scale p-scale-2">
+                <input type="radio" name="pSex" id="pSex_m" value="male" />
+                <label for="pSex_m">בן</label>
+                <input type="radio" name="pSex" id="pSex_f" value="female" />
+                <label for="pSex_f">בת</label>
+              </div>
+            </fieldset>
+            <div class="info-field" id="pDobField" role="group" aria-labelledby="pDobLabel">
+              <div id="pDobLabel" class="p-field-label">תאריך לידה</div>
+              <div class="p-dob-row">
+                <select id="pDobDay" aria-label="יום לידה">
+                  <option value="">יום</option>
+                </select>
+                <select id="pDobMonth" aria-label="חודש לידה">
+                  <option value="">חודש</option>
+                </select>
+                <select id="pDobYear" aria-label="שנת לידה">
+                  <option value="">שנה</option>
+                </select>
+              </div>
+              <p id="pDobError" class="p-hint p-field-error" role="alert" hidden></p>
+              <p id="pDobHint" class="p-hint">אין צורך לכתוב שם. נזהה את השאלון לפי תאריך הלידה.</p>
+            </div>
+          </div>
+        </section>
+
+        <div id="pQuestionnaire"></div>
+
+        <div id="pMissing" class="p-missing-msg" role="alert" hidden></div>
+
+        <div class="actions">
+          <button type="button" id="pFinish" class="btn btn-primary">סיום</button>
+          <button type="button" id="pReset" class="p-textlink">איפוס</button>
+        </div>
+      </div>
+
+      <section id="pDone" class="info-card p-done" hidden>
+        <h2 id="pDoneTitle" tabindex="-1">תודה! סיימתם את השאלון.</h2>
+        <p id="pDoneLead">נשאר רק לשלוח את התשובות למטפל/ת:</p>
+
+        <div id="pWayMain" class="p-way p-way-main">
+          <button type="button" id="pSend" class="btn btn-primary">הורדת קובץ התשובות (PDF)</button>
+          <p id="pSendHint" class="p-hint">הקובץ יישמר במחשב. שלחו אותו במייל למטפל/ת.</p>
+          <p id="pSendError" class="p-hint p-error" role="alert" hidden>
+            לא הצלחנו ליצור את הקובץ. רעננו את הדף ונסו שוב.
+          </p>
+          <button type="button" id="pDownloadOnly" class="btn btn-link" hidden>
+            או: הורדת הקובץ למכשיר
+          </button>
+        </div>
+
+        <div class="p-done-links">
+          <button type="button" id="pBack" class="p-textlink">חזרה לתשובות</button>
+          <p id="pClearDoneHint" class="p-hint">מומלץ אחרי ששלחתם.</p>
+          <button type="button" id="pClearDone" class="p-textlink p-textlink-danger">
+            מחיקת התשובות מהמכשיר
+          </button>
+        </div>
+        <p id="pDoneNote" class="p-hint p-small">על התוצאות תשוחחו עם צוות הריפוי בעיסוק.</p>
+      </section>
+
+      <p id="pVersion" class="p-version">גרסה 1.0</p>
+    </div>
+
+    <script src="items.js"></script>
+    <script src="eforts-code.js"></script>
+    <script src="assets/vendor/jspdf.umd.min.js"></script>
+    <script src="parent-pdf.js"></script>
+    <script src="parent.js"></script>
+  </body>
+</html>

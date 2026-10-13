@@ -1,0 +1,17 @@
+{
+  "name": "eforts-scoring",
+  "private": true,
+  "scripts": {
+    "lint": "eslint app.js items.js eforts-code.js parent.js parent-pdf.js tests/**/*.js",
+    "lint:fix": "eslint app.js items.js eforts-code.js parent.js parent-pdf.js tests/**/*.js --fix",
+    "format": "prettier --check app.js items.js eforts-code.js parent.js parent-pdf.js styles.css parent.css tests/**/*.js",
+    "format:fix": "prettier --write app.js items.js eforts-code.js parent.js parent-pdf.js styles.css parent.css tests/**/*.js",
+    "test": "npm run lint && npm run format && npx playwright test --reporter=list"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.52.0",
+    "eslint": "^10.1.0",
+    "eslint-config-prettier": "^10.1.8",
+    "prettier": "^3.8.1"
+  }
+}

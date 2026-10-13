@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>EFORTS — קידוד שאלון</title>
+    <meta property="og:title" content="EFORTS — קידוד שאלון למטפל/ת" />
+    <meta
+      property="og:description"
+      content="שאלון למדידת יכולת הניהול העצמי של ילדים בשגרות היום יום (Frisch & Rosenblum). עמוד הקידוד למטפל/ת."
+    />
+    <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <!-- PDF generated via browser print dialog — no heavy libraries needed -->
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="ot">
+    <div class="container">
+      <!-- Header -->
+      <div class="header">
+        <div class="header-logos">
+          <img src="assets/haifa.jpg" alt="אוניברסיטת חיפה" class="header-logo header-logo-haifa" />
+          <img
+            src="assets/chap.png"
+            alt="המעבדה לתפקוד אנושי מורכב (CHAP)"
+            class="header-logo header-logo-chap"
+          />
+          <img
+            src="assets/clalit.svg"
+            alt="שירותי בריאות כללית"
+            class="header-logo header-logo-clalit"
+          />
+        </div>
+        <h1>
+          שאלון למדידת יכולת הניהול העצמי של ילדים בשגרות היום יום
+          <span class="header-acronym">EFORTS</span>
+        </h1>
+        <p class="header-authors">כרמית פריש ופרופ' שרה רוזנבלום, אוניברסיטת חיפה</p>
+        <p class="header-lab">המעבדה לתפקוד אנושי מורכב (CHAP), אוניברסיטת חיפה</p>
+        <p class="header-citation">Frisch & Rosenblum, 2014</p>
+        <p class="header-subtitle">קידוד שאלון · עמוד למטפל/ת</p>
+        <p class="header-credit">
+          תהליך מחשוב השאלון בוצע ע"י אליסון אלט, מרפאה בעיסוק בשירותי בריאות כללית מחוז ירושלים,
+          בתיאום ואישור המחברות.
+        </p>
+      </div>
+
+      <!-- Child Info -->
+      <div id="formSection">
+        <!-- O2: what was restored from this browser, with a way out -->
+        <div class="restore-bar" id="restoreBar" hidden>
+          <span id="restoreText"></span>
+          <button type="button" class="btn btn-primary" id="restoreShow" hidden>
+            הצגת התוצאות
+          </button>
+          <button type="button" class="btn btn-secondary" id="restoreNew" onclick="resetForm()">
+            שאלון חדש
+          </button>
+        </div>
+        <!-- Carmit 2026-10-13 (#1–3): the two ways in, and how they meet -->
+        <section class="ways-intro" id="waysIntro">
+          <div class="ways-title">שתי דרכים למלא את השאלון. שתיהן מגיעות לאותן תוצאות:</div>
+          <ol class="ways-list">
+            <li>
+              <strong>ההורים ממלאים בבית:</strong> שולחים להורים קישור, הם מחזירים קובץ PDF,
+              ואת/ה מעלה אותו כאן.
+            </li>
+            <li>
+              <strong>את/ה ממלא/ת כאן:</strong> מתוך עותק מודפס, או יחד עם ההורה בפגישה, ב«שאלון
+              למטפל/ת» שלמטה.
+            </li>
+          </ol>
+          <p class="ways-end">בשתי הדרכים: בודקים את התשובות ולוחצים «חשב ציונים».</p>
+        </section>
+
+        <!-- Way 1: send the questionnaire to parents (easy-send) -->
+        <section class="send-box" id="sendBox">
+          <div class="send-title" id="sendTitle">1. ההורים ממלאים בבית</div>
+          <ol class="send-steps" id="sendSteps">
+            <li>שולחים להורים את הקישור.</li>
+            <li>ההורים ממלאים, מקבלים קובץ PDF ושולחים אותו אליך.</li>
+            <li>
+              את/ה מעלה את הקובץ בתיבה «העלאת הקובץ שההורים החזירו», והשאלון למטפל/ת מתמלא
+              אוטומטית.
+            </li>
+          </ol>
+          <p class="send-hint" id="sendHint">שלח/י את הקישור הזה להורים, בכל דרך שנוחה לך.</p>
+          <input
+            type="text"
+            id="sendLink"
+            class="send-link"
+            dir="ltr"
+            readonly
+            aria-label="הקישור להורים"
+          />
+          <div class="import-actions">
+            <button type="button" class="btn btn-primary" id="sendCopy">העתקת קישור להורים</button>
+          </div>
+          <p class="import-status" id="sendStatus" role="status" aria-live="polite"></p>
+          <p class="send-privacy" id="sendPrivacy">
+            🔒 התשובות לא נשמרות באף שרת. הן נשארות במכשיר של ההורים וחוזרות אליך רק כקובץ.
+          </p>
+        </section>
+
+        <!-- Way 1, last step: upload the file the parents sent back (PF2) -->
+        <details class="import-box" id="importBox" open>
+          <summary id="importSummary">העלאת הקובץ שההורים החזירו</summary>
+          <div class="import-body">
+            <p class="import-drop-hint" id="importDropHint">
+              העלה/י את קובץ ה-PDF שקיבלת מההורים, או גרור/י אותו לכאן.
+            </p>
+            <div class="import-actions">
+              <button type="button" class="btn btn-primary" id="importFileLabel">
+                בחירת קובץ התשובות (PDF)
+              </button>
+              <input
+                type="file"
+                id="importFile"
+                accept=".pdf,.txt,application/pdf,text/plain"
+                hidden
+              />
+            </div>
+            <label for="importCode" id="importCodeLabel" class="import-paste-label"
+              >או הדבק/י את שורת הקוד שבתחתית ה-PDF:</label
+            >
+            <textarea
+              id="importCode"
+              rows="3"
+              dir="ltr"
+              spellcheck="false"
+              autocomplete="off"
+            ></textarea>
+            <div class="import-actions">
+              <button type="button" class="btn btn-secondary" id="importCodeBtn">בדיקת הקוד</button>
+            </div>
+            <p class="import-status" id="importStatus" role="status" aria-live="polite"></p>
+            <p class="import-edge" id="importEdge" hidden></p>
+            <div class="import-preview" id="importPreview" hidden>
+              <p id="importPreviewTitle">נמצא קוד תקין. בדוק/י לפני המילוי:</p>
+              <dl id="importPreviewList"></dl>
+              <div class="info-field import-anon">
+                <label for="importAnon"
+                  >מספר אנונימי (מופיע בכותרות ובשמות הקבצים, לא בסיכום)</label
+                >
+                <input type="text" id="importAnon" placeholder="למשל 50 · בלי שם" />
+                <p class="field-msg" id="importAnonMsg" role="alert"></p>
+              </div>
+              <div class="import-actions">
+                <button type="button" class="btn btn-primary" id="importApply">
+                  מילוי וחישוב ציונים
+                </button>
+                <button type="button" class="btn btn-back" id="importCancel">ביטול</button>
+              </div>
+            </div>
+          </div>
+        </details>
+
+        <!-- Way 2: the therapist's questionnaire (Carmit #3: who fills this in) -->
+        <section class="form-head" id="therapistForm">
+          <h2 class="form-title" id="therapistFormTitle">2. שאלון למטפל/ת</h2>
+          <p class="form-lead" id="therapistFormLead">
+            כאן את/ה ממלא/ת את תשובות ההורה, מתוך עותק מודפס או יחד עם ההורה בפגישה. קובץ
+            שההורים החזירו ממלא את השאלון הזה אוטומטית.
+          </p>
+        </section>
+
+        <div class="info-card">
+          <div class="info-card-title">פרטי המטופל/ת</div>
+          <div class="info-grid">
+            <div class="info-field">
+              <label for="anonId">מספר אנונימי (מופיע בכותרות ובשמות הקבצים, לא בסיכום)</label>
+              <input type="text" id="anonId" placeholder="למשל 50 · בלי שם" />
+            </div>
+            <div class="info-field">
+              <label for="childGender">מין</label>
+              <select id="childGender">
+                <option value="">—</option>
+                <option value="male">בן</option>
+                <option value="female">בת</option>
+              </select>
+            </div>
+            <div class="info-field" style="grid-column: 1 / -1">
+              <label>תאריך לידה</label>
+              <div class="date-row" style="display: flex; gap: 10px">
+                <select
+                  id="birthDay"
+                  aria-label="יום לידה"
+                  style="
+                    flex: 1;
+                    padding: 10px 12px;
+                    border: 1.5px solid var(--border);
+                    border-radius: 8px;
+                    font-family: inherit;
+                    font-size: 0.9rem;
+                    background: #fafbfc;
+                  "
+                >
+                  <option value="">יום</option>
+                </select>
+                <select
+                  id="birthMonth"
+                  aria-label="חודש לידה"
+                  style="
+                    flex: 1.5;
+                    padding: 10px 12px;
+                    border: 1.5px solid var(--border);
+                    border-radius: 8px;
+                    font-family: inherit;
+                    font-size: 0.9rem;
+                    background: #fafbfc;
+                  "
+                >
+                  <option value="">חודש</option>
+                  <option value="0">ינואר</option>
+                  <option value="1">פברואר</option>
+                  <option value="2">מרץ</option>
+                  <option value="3">אפריל</option>
+                  <option value="4">מאי</option>
+                  <option value="5">יוני</option>
+                  <option value="6">יולי</option>
+                  <option value="7">אוגוסט</option>
+                  <option value="8">ספטמבר</option>
+                  <option value="9">אוקטובר</option>
+                  <option value="10">נובמבר</option>
+                  <option value="11">דצמבר</option>
+                </select>
+                <select
+                  id="birthYear"
+                  aria-label="שנת לידה"
+                  style="
+                    flex: 1;
+                    padding: 10px 12px;
+                    border: 1.5px solid var(--border);
+                    border-radius: 8px;
+                    font-family: inherit;
+                    font-size: 0.9rem;
+                    background: #fafbfc;
+                  "
+                >
+                  <option value="">שנה</option>
+                </select>
+              </div>
+            </div>
+            <div class="info-field">
+              <label>גיל</label>
+              <div class="computed" id="calcAge">—</div>
+            </div>
+            <div class="info-field">
+              <label>קבוצת גיל</label>
+              <div class="computed" id="ageGroupDisplay">—</div>
+              <input type="hidden" id="ageGroup" />
+            </div>
+            <div class="info-field" style="grid-column: 1 / -1">
+              <label>תאריך מילוי</label>
+              <div class="date-row" style="display: flex; gap: 10px">
+                <select
+                  id="fillDay"
+                  aria-label="יום מילוי"
+                  style="
+                    flex: 1;
+                    padding: 10px 12px;
+                    border: 1.5px solid var(--border);
+                    border-radius: 8px;
+                    font-family: inherit;
+                    font-size: 0.9rem;
+                    background: #fafbfc;
+                  "
+                >
+                  <option value="">יום</option>
+                </select>
+                <select
+                  id="fillMonth"
+                  aria-label="חודש מילוי"
+                  style="
+                    flex: 1.5;
+                    padding: 10px 12px;
+                    border: 1.5px solid var(--border);
+                    border-radius: 8px;
+                    font-family: inherit;
+                    font-size: 0.9rem;
+                    background: #fafbfc;
+                  "
+                >
+                  <option value="">חודש</option>
+                  <option value="0">ינואר</option>
+                  <option value="1">פברואר</option>
+                  <option value="2">מרץ</option>
+                  <option value="3">אפריל</option>
+                  <option value="4">מאי</option>
+                  <option value="5">יוני</option>
+                  <option value="6">יולי</option>
+                  <option value="7">אוגוסט</option>
+                  <option value="8">ספטמבר</option>
+                  <option value="9">אוקטובר</option>
+                  <option value="10">נובמבר</option>
+                  <option value="11">דצמבר</option>
+                </select>
+                <select
+                  id="fillYear"
+                  aria-label="שנת מילוי"
+                  style="
+                    flex: 1;
+                    padding: 10px 12px;
+                    border: 1.5px solid var(--border);
+                    border-radius: 8px;
+                    font-family: inherit;
+                    font-size: 0.9rem;
+                    background: #fafbfc;
+                  "
+                >
+                  <option value="">שנה</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-calc">
+          <button type="button" class="btn btn-primary" id="calcTop" onclick="calculate()">
+            חשב ציונים
+          </button>
+        </div>
+
+        <div class="warning" id="warning"></div>
+
+        <!-- O1: after an import the 30 answers fold into one line -->
+        <button
+          type="button"
+          class="fold-toggle"
+          id="foldToggle"
+          aria-expanded="false"
+          aria-controls="questionnaire"
+          hidden
+        >
+          <span id="foldText">30 תשובות מולאו מהקובץ</span> ·
+          <span id="foldAction">הצגה ועריכה ▾</span>
+        </button>
+
+        <!-- Progress (O8: only from the questionnaire down) -->
+        <div class="progress-wrap" id="progressWrap">
+          <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+          <div class="progress-text" id="progressText"><bdi dir="ltr">0 / 30</bdi></div>
+        </div>
+
+        <!-- Questionnaire -->
+        <div id="questionnaire"></div>
+
+        <div class="actions">
+          <button class="btn btn-primary" id="calcBottom" onclick="calculate()">חשב ציונים</button>
+          <button class="btn btn-danger" id="formReset" onclick="resetForm()">איפוס</button>
+        </div>
+        <div class="save-indicator" id="saveIndicator">נשמר זמנית בלשונית זו בלבד, עד לסגירתה</div>
+      </div>
+
+      <!-- Results -->
+      <div id="results"></div>
+    </div>
+
+    <script src="items.js"></script>
+    <script src="eforts-code.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
