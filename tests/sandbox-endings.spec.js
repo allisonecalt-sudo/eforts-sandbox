@@ -67,7 +67,7 @@ for (const [name, model] of CASES) {
       await setMode(page, 'b');
       await expect(page.locator('#endingPick')).toBeVisible();
       await expect(page.locator('.ending-hint')).toHaveText(
-        'ההצעה הראשונה והשנייה: ניסוח כללי לפי כרמית פריש (13.10). השלישית: הניסוח הנוכחי באתר הראשי.',
+        'ההצעה הראשונה והשנייה: ניסוח כללי לפי כרמית פריש (13.10). השלישית: הניסוח המפורט שהיה באתר הראשי עד 13.10.2026.',
       );
       // none chosen = like א
       expect(await clicksBody(page)).not.toContain('מומלץ');

@@ -4,6 +4,7 @@
 const { test, expect } = require('@playwright/test');
 const path = require('path');
 const { pathToFileURL } = require('url');
+const { MODELS } = require('./helpers/eforts-parent');
 const { gotoApp, fillAndCalculate } = require('./helpers/eforts-app');
 
 const CITE = '© Frisch & Rosenblum, 2014';
@@ -91,5 +92,21 @@ test('parent sheet carries the © line and footer', async ({ page }) => {
   expect(html).toContain(
     'EFORTS © Frisch &amp; Rosenblum, 2014 · הסיכום נכתב להורים ואינו מחליף את דוח האבחון.',
   );
+  expect(html).toContain(`<div class="q-lab">${LAB}</div>`);
   expect(html).not.toContain('כרמית פריש');
+});
+
+test('AI export background cites © Frisch & Rosenblum, 2014', async ({ page }) => {
+  await gotoApp(page);
+  const code = await page.evaluate((m) => EFORTSCode.encode(m), MODELS.G50);
+  await page.locator('#importCode').fill(code);
+  await page.locator('#importCodeBtn').click();
+  await expect(page.locator('#importPreview')).toBeVisible();
+  await page.locator('#importAnon').fill('999');
+  await page.locator('#importApply').click();
+  await expect(page.locator('#results')).toBeVisible();
+  const text = await page.evaluate(() => buildExportText());
+  expect(text).toContain(
+    '(© Frisch & Rosenblum, 2014; נורמות וציוני חתך: Frisch & Rosenblum, 2024)',
+  );
 });
