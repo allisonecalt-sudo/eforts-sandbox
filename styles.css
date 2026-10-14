@@ -98,11 +98,12 @@ body.ot.showing-results .header {
   color: var(--text-secondary);
   margin-top: 2px;
 }
-.header p.header-citation {
-  font-size: 0.72rem;
-  font-weight: 300;
-  color: var(--text-secondary);
-  margin-top: 4px;
+.header p.header-ownership {
+  font-size: 0.7rem;
+  font-weight: 400;
+  color: #5a6a7e;
+  margin-top: 6px;
+  line-height: 1.5;
 }
 .header p.header-subtitle {
   font-size: 0.72rem;
@@ -126,6 +127,7 @@ body.ot .header-logos {
   margin-bottom: 8px;
 }
 body.ot .header p.header-authors {
+  white-space: nowrap;
   margin-top: 6px;
 }
 /* Carmit 2026-10-13 #3: the subtitle says whose page this is («עמוד למטפל/ת») */
@@ -138,18 +140,14 @@ body.ot .header p.header-credit {
   margin-top: 4px;
   line-height: 1.4;
 }
-/* lab + citation read as one small line */
-body.ot .header p.header-lab,
-body.ot .header p.header-citation {
-  display: inline;
+body.ot .header p.header-lab {
   font-size: 0.7rem;
   margin: 0;
 }
-body.ot .header p.header-citation {
-  white-space: nowrap;
-}
-body.ot .header p.header-citation::before {
-  content: ' · ';
+body.ot .header p.header-ownership {
+  font-size: 0.68rem;
+  margin-top: 4px;
+  line-height: 1.4;
 }
 
 /* ===== PROGRESS BAR ===== */
