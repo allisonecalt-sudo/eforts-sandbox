@@ -194,11 +194,11 @@ test('R10: summary text is right-aligned', async ({ page }) => {
   expect(['right', 'start']).toContain(ta);
 });
 
-test('R9: at phone width the citation is one line and chips are short', async ({ page }) => {
+test('R9: at phone width the © citation is one line and chips are short', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 800 });
   await open(page);
   const ws = await page
-    .locator('.header-citation')
+    .locator('.header-authors')
     .evaluate((el) => window.getComputedStyle(el).whiteSpace);
   expect(ws).toBe('nowrap');
   await results(page);

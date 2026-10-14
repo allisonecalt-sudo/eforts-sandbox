@@ -156,7 +156,7 @@ test.describe('3. contrast', () => {
         '.header-subtitle',
         '.header-credit',
         '.header-lab',
-        '.header-citation',
+        '.header-ownership',
         '.results-meta',
         '.results-hint',
         '.summary-note',

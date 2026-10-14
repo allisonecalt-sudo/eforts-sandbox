@@ -490,6 +490,6 @@ fieldset#pSexField.p-field-missing {
 .p-done .btn-link {
   min-height: 44px;
 }
-.header p.header-citation {
+.header p.header-authors {
   white-space: nowrap;
 }
